@@ -51,9 +51,7 @@ if 'active_page' not in st.session_state:
     st.session_state.active_page = '1_Home'
     st.session_state.kT_evap = 273.15
     st.session_state.kT_cond = 273.15+40
-    #st.session_state.kn_is = 0.85
     st.session_state.kQ_evap = 121.7e3
-    #st.session_state.kr_Qc = 0.1
     st.session_state.kT_sup = 0
     st.session_state.kT_sub = 0
 
@@ -78,7 +76,7 @@ T_cond = col1.number_input(
 )
 
 n_is = col1.slider(
-    "Isentropic efficiency", 0., 1., 0.85, key='kn_is', help='Isentropic efficiency of the compressor'
+    "Isentropic efficiency", 0., 1., 0.85, help='Isentropic efficiency of the compressor'
 )
 
 Q_evap = col1.number_input(
@@ -91,7 +89,7 @@ Q_evap = col1.number_input(
 )
 
 r_Qc = col1.slider(
-    "% Heat rejected in compressor", 0., 0.9, 0.1, key='kr_Qc', help='% Heat rejected in compressor'
+    "% Heat rejected in compressor", 0., 0.9, 0.1, help='% Heat rejected in compressor'
 )
 
 T_sup = col1.number_input(
