@@ -5,7 +5,6 @@ Pillow==10.4.0
 plotly==5.20.0
 streamlit==1.36.0
 streamlit_player==0.1.5
-cadquery==2.4.0
 XlsxWriter==3.2.0
 CoolProp==6.6.0
 
