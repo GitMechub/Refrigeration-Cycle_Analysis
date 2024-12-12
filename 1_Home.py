@@ -51,9 +51,9 @@ if 'active_page' not in st.session_state:
     st.session_state.active_page = '1_Home'
     st.session_state.kT_evap = 273.15
     st.session_state.kT_cond = 273.15+40
-    st.session_state.kn_is = 0.85
+    #st.session_state.kn_is = 0.85
     st.session_state.kQ_evap = 121.7e3
-    st.session_state.kr_Qc = 0.1
+    #st.session_state.kr_Qc = 0.1
     st.session_state.kT_sup = 0
     st.session_state.kT_sub = 0
 
@@ -77,14 +77,8 @@ T_cond = col1.number_input(
     help="Outlet temperature from gas cooler if transcritical [K]"
 )
 
-n_is = col1.number_input(
-    label='Isentropic efficiency',
-    min_value=0.,
-    max_value=1.,
-    format="%f",
-    step=0.1,
-    key='kn_is',
-    help="Isentropic efficiency of the compressor"
+n_is = col1.slider(
+    "Isentropic efficiency", 0., 1., 0.85, key='kn_is', help='Isentropic efficiency of the compressor'
 )
 
 Q_evap = col1.number_input(
@@ -96,14 +90,8 @@ Q_evap = col1.number_input(
     help="Heat load [W]"
 )
 
-r_Qc = col1.number_input(
-    label='% Heat rejected in compressor',
-    min_value=0.,
-    max_value=1.,
-    format="%f",
-    step=0.1,
-    key='kr_Qc',
-    help="% Heat rejected in compressor"
+r_Qc = col1.slider(
+    "% Heat rejected in compressor", 0., 0.9, 0.1, key='kr_Qc', help='% Heat rejected in compressor'
 )
 
 T_sup = col1.number_input(
@@ -121,7 +109,7 @@ T_sub = col1.number_input(
     format="%f",
     step=1.,
     key='kT_sub',
-    help="Subcooling temperature difference [K]"
+    help="Subcooling temperature difference [K] - only for subcritical cycles"
 )
 
 fluido_1 = col1.selectbox(
@@ -244,8 +232,11 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
             plt.legend()
             plt.grid()
             #plt.show()
-            col2.pyplot(plt.gcf())
-            col2.divider()
+            with col2:
+                with st.expander("Optimal Performance"):
+                    optimal_cop_text = "Coefficient of Performance (COP) = "+str(melhor_COP)
+                    st.markdown(optimal_cop_text)
+                    st.pyplot(plt.gcf())
 
         ### Results for States 2 and 3:
         P2 = melhor_P2
@@ -347,8 +338,10 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
                           xytext=(5,5),  # Position offset to adjust text visualization
                           ha='center', fontsize=10, color='blue')  # Alignment and style
 
-          col2.pyplot(plt.gcf())
-          col2.divider()
+          with col2:
+              with st.expander("P-h Cycle Diagram"):
+                st.pyplot(plt.gcf())
+
 
           # T-s diagram
 
@@ -412,9 +405,10 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
                           textcoords="offset points",  # Offset coordinates to avoid overlap
                           xytext=(5,5),  # Position offset to adjust text visualization
                           ha='center', fontsize=10, color='red')  # Alignment and style
+          with col2:
+              with st.expander("T-s Cycle Diagram"):
+                st.pyplot(plt.gcf())
 
-          col2.pyplot(plt.gcf())
-          col2.divider()
 
 
       # Return results
@@ -436,10 +430,16 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
           "Fluid": fluido_1
       }
 
+      if transc_cycle is True:    # Isentropic Average Temperature for the Gas Cooler
+        dict_result['Gas Cooler Avg. Temperature [K]'] = abs(
+            (dict_result['h [J/kg]'][1] - dict_result['h [J/kg]'][2]) /
+            (dict_result['s [J/kg·K]'][1] - dict_result['s [J/kg·K]'][2])
+        )
+
       if fluido_escolhido == 1:
           #display(pd.DataFrame(dict_result))
           col2.dataframe(pd.DataFrame(dict_result), use_container_width=True)
-          col2.divider()
+
 
       return dict_result
 
@@ -593,7 +593,8 @@ def Bd_comparativo(list_dict_exergia, list_dados):
 
   # Show the chart
   #plt.show()
-  col2.pyplot(plt.gcf())
+  st.markdown(":red[Transcritical] | Subcritical")
+  st.pyplot(plt.gcf())
 
 
 #   PROCESSING
@@ -601,15 +602,20 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
 
     # Basic input validation
     if not isinstance(T_evap, (int, float)) or not isinstance(T_cond, (int, float)):
-        return "Error: T_evap and T_cond must be numbers.", 0
-    if not isinstance(n_is, (int, float)) or not (0 < n_is <= 1):
-        return "Error: n_is must be a number between 0 and 1.", 0
+        col2.error("Error: T_evap and T_cond must be numbers.")
+        return False
+    if not isinstance(n_is, (int, float)) or not (0 <= n_is <= 1):
+        col2.error("Error: n_is must be a number between 0 and 1.")
+        return False
     if not isinstance(Q_evap, (int, float)) or Q_evap <= 0:
-        return "Error: Q_evap must be a positive number.", 0
-    if not isinstance(r_Qc, (int, float)) or r_Qc <= 0:
-        return "Error: r_Qc must be a positive number.", 0
+        col2.error("Error: Q_evap must be a positive number.")
+        return False
+    if not isinstance(r_Qc, (int, float)) or r_Qc < 0:
+        col2.error("Error: r_Qc must be a positive number.")
+        return False
     if not isinstance(fluido_1, str):
-        return "Error: fluido_1 must be a string.", 0
+        col2.error("Error: Failed to process the chosen fluid.")
+        return False
 
     # List of alternative fluids
     lista_de_fluidos = ['R134a', 'Ammonia', 'R11', 'R12', 'R22', 'Butene', 'R1234yf', 'Methane', 'R410A', 'R407C','CO2', 'N2O', "CycloPentane", "n-Butane"]
@@ -621,13 +627,15 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
     try:
 
         # Calculate the cycle for the chosen fluid
+        st.subheader("Refrigerant Cycle", anchor=False)
         result_fluido_escolhido = ciclo_refrigeracao(
             T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1=fluido_1, T_sup=T_sup, T_sub=T_sub, fluido_escolhido=1
         )
 
         # Check if the result for the chosen fluid is valid
         if result_fluido_escolhido == 0 or result_fluido_escolhido is None:
-            return f"Error: Failed to process the chosen fluid '{fluido_1}'.", 0
+            col2.error(f"Error: Failed to process the chosen fluid '{fluido_1}'.")
+            return False
 
         # Initialize lists for data and exergies
         list_dict_exergia = [calculo_exergia_padrao(result_fluido_escolhido)]
@@ -665,7 +673,7 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
         # Process the data for the exergy table
         fluidos = [fluido_1] + lista_de_fluidos
         tabela = []
-        print("\n\n * Exergy Destruction Data and Exergy Efficiency:\n")
+        #print("\n\n * Exergy Destruction Data and Exergy Efficiency:\n")
         for i, item in enumerate(list_dict_exergia):
             linha = {
                 'Fluid': fluidos[i],
@@ -687,20 +695,23 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
 
         # Display the table
         #display(df_list_dict_exergia.head(1))
-        with col2:
-            with st.expander("Exergy Data"):
-                col2.dataframe(df_list_dict_exergia.head(1), use_container_width=True)
+        st.divider()
+        st.subheader("Exergy Analysis", anchor=False, help="Exergy loss for each component | Relative exergy loss for each component | Exergetic efficiency")
+        col2.dataframe(df_list_dict_exergia.head(1), use_container_width=True)
 
         list_dados = [x for x in list_dados if x != 0]
 
-        return list_dados, list_dict_exergia
+        return list_dados, list_dict_exergia, df_list_dict_exergia
 
     except KeyError as ke:
-        return f"Key error accessing data for fluid '{fluido_1}': {ke}", 0
+        col2.error(f"Key error accessing data for fluid '{fluido_1}': {ke}")
+        return False
     except ZeroDivisionError as zde:
-        return f"Zero division error calculating Tc_: {zde}", 0
+        col2.error(f"Zero division error calculating Tc_: {zde}")
+        return False
     except Exception as e:
-        return f"Unexpected error processing cycles: {e}", 0
+        col2.error(f"Unexpected error processing cycles: {e}")
+        return False
 
 ################# RUNNING #################
 
@@ -711,7 +722,41 @@ if run_button:
   with col2:
 
     with st.spinner('Loading...'):
-        list_dados, list_dict_exergia = processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1,
+        list_dados, list_dict_exergia, df_list_dict_exergia = processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1,
                                                                       T_sup, T_sub)
 
-        Bd_comparativo(list_dict_exergia, list_dados)
+        with st.expander("Comparative analysis for various fluids"):
+            if list_dados[0]['Transcritical?'] == True:
+                st.warning('In transcritical systems, comparisons with subcritical systems are based on the average entropic temperature of the gas cooler, which is assumed to be the condensing temperature for subcritical systems.', icon="⚠️")
+            st.dataframe(df_list_dict_exergia, use_container_width=True)
+            Bd_comparativo(list_dict_exergia, list_dados)
+
+
+        ################# DOWNLOAD #################
+
+        st.divider()
+        
+        # Download Button
+
+        import io
+
+        buffer = io.BytesIO()
+
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as excel_writer:
+
+            df_list_dados = pd.DataFrame(list_dados[0])
+            df_list_dados.to_excel(excel_writer, sheet_name='Refrigeration Cycle Data', index=True)
+            df_list_dict_exergia.to_excel(excel_writer, sheet_name='Exergetic Analysis', index=False)
+
+            # Close the Pandas Excel writer and output the Excel file to the buffer
+            excel_writer.close()
+
+            col2.download_button(
+                label="⬇️ Download Refrigeration Cycle Data",
+                data=buffer,
+                file_name=str(fluido_1)+"_Ref_Cycle_Data.xlsx",
+                use_container_width=True
+            )
+
+else:
+  col2.markdown("Click on 'Run'")
