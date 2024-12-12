@@ -1,0 +1,11 @@
+matplotlib==3.8.3
+numpy==1.26.4
+pandas==2.2.2
+Pillow==10.4.0
+plotly==5.20.0
+streamlit==1.36.0
+streamlit_player==0.1.5
+cadquery==2.4.0
+XlsxWriter==3.2.0
+CoolProp==6.6.0
+
