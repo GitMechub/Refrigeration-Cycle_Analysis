@@ -2,11 +2,11 @@ https://refcycleanalysis.streamlit.app/
 
 ## About Refrigeration Cycle Analysis:
 
-Refrigerant Cycle is a Python app designed to help you quickly and easily analyze and optimize refrigeration cycles based on thermodynamic principles.
+Refrigerant Cycle Analysis is a Python app designed to help you quickly and easily analyze and optimize refrigeration cycles based on thermodynamic principles.
 
 ## How it Works:
 
-To use Refrigerant Cycle, you simply need to input a few key parameters:
+To use Refrigerant Cycle Analysis, you simply need to input a few key parameters:
 - Evaporation and condensation temperatures (for transcritical systems, the gas cooler outlet temperature is used instead of the condensation temperature).
 - Isentropic efficiency of the compressor
 - Heat load
@@ -20,7 +20,7 @@ The app will then generate a detailed table showing the thermodynamic states (en
 - Compressor power input
 - Mass flow rate
 
-Additionally, Refrigerant Cycle creates P-h and T-s diagrams for a better understanding of the system's operation and provides an exergy analysis to identify system inefficiencies.
+Additionally, Refrigerant Cycle Analysis creates P-h and T-s diagrams for a better understanding of the system's operation and provides an exergy analysis to identify system inefficiencies.
 
 ## Key Features:
 
