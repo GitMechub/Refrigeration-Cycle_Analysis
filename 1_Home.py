@@ -711,6 +711,87 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
         col2.error(f"Unexpected error processing cycles: {e}")
         return False
 
+
+#   ENVIRONMENT
+
+def environmental_effects(fluido_1):
+    # List of alternative fluids
+    lista_de_fluidos = ['R134a', 'Ammonia', 'R11', 'R12', 'R22', 'Butene', 'R1234yf', 'Methane', 'R410A', 'R407C',
+                        'CO2', 'N2O', "CycloPentane", "n-Butane"]
+
+    # Remove the chosen initial fluid from the list
+    if fluido_1 in lista_de_fluidos:
+        lista_de_fluidos.remove(fluido_1)
+
+    refrigerants = lista_de_fluidos + [fluido_1]
+
+    gwp20 = []
+    gwp100 = []
+    gwp500 = []
+
+    # Retrieve GWP values for each refrigerant
+    for refrigerant in refrigerants[:]:
+        try:
+            gwp20_value = PropsSI('GWP20', refrigerant)
+            gwp100_value = PropsSI('GWP100', refrigerant)
+            gwp500_value = PropsSI('GWP500', refrigerant)
+
+            gwp20.append(gwp20_value)
+            gwp100.append(gwp100_value)
+            gwp500.append(gwp500_value)
+
+        except Exception as e:
+            refrigerants.remove(refrigerant)  # Remove invalid refrigerants
+            print(f"Error with {refrigerant}: {e}")
+            pass
+
+    y = np.arange(len(refrigerants))  # Positions for the refrigerants
+    height = 0.2  # Bar height
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Creating horizontal bars for GWP20, GWP100, and GWP500
+    bars_gwp20 = ax.barh(y - height, gwp20, height, label='20-year GWP', color='#1984c5')
+    bars_gwp100 = ax.barh(y, gwp100, height, label='100-year GWP', color='#FF7F50')
+    bars_gwp500 = ax.barh(y + height, gwp500, height, label='500-year GWP', color='#9B9B9B')
+
+    # Adding the values to the right of the bars
+    for bar in bars_gwp20:
+        width = bar.get_width()
+        ax.text(width + 30, bar.get_y() + bar.get_height() / 2, f'{int(width)}', va='center', fontsize=10,
+                color='#1984c5')
+
+    for bar in bars_gwp100:
+        width = bar.get_width()
+        ax.text(width + 30, bar.get_y() + bar.get_height() / 2, f'{int(width)}', va='center', fontsize=10,
+                color='#FF7F50')
+
+    for bar in bars_gwp500:
+        width = bar.get_width()
+        ax.text(width + 30, bar.get_y() + bar.get_height() / 2, f'{int(width)}', va='center', fontsize=10,
+                color='#9B9B9B')
+
+    # Customizing the Y-axis
+    ax.set_yticks(y)
+    ax.set_yticklabels(refrigerants)
+    ax.set_xlabel('GWP')
+    ax.set_ylabel('Refrigerants')
+    ax.set_title('Global Warming Potential (GWP) for Different Refrigerants')
+
+    # Adjusting the X-axis limit to ensure the values fit
+    ax.set_xlim(0, max(max(gwp20), max(gwp100), max(gwp500)) + 1000)  # Adjust the upper limit of the X-axis
+
+    # Displaying the legend
+    fig.legend(loc='upper right', bbox_to_anchor=(0.9, 0.9))
+
+    # Adjusting the layout to avoid clipping
+    plt.tight_layout()
+
+    # Display the chart
+    st.pyplot(plt.gcf())
+        #plt.show()
+
+
 ################# RUNNING #################
 
 col2.subheader("Results", anchor=False, divider='gray')
@@ -729,11 +810,15 @@ if run_button:
             st.dataframe(df_list_dict_exergia, use_container_width=True)
             Bd_comparativo(list_dict_exergia, list_dados)
 
+        st.divider()
+        st.subheader("Environmental Effects", anchor=False)
+        with st.expander("GWP Analysis"):
+            environmental_effects(fluido_1)
 
         ################# DOWNLOAD #################
 
         st.divider()
-        
+
         # Download Button
 
         import io
