@@ -703,7 +703,7 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
         # Display the table
         #display(df_list_dict_exergia.head(1))
         st.divider()
-        st.subheader("Exergy Analysis", anchor=False, help="Exergy loss for each component | Relative exergy loss for each component | Exergetic efficiency")
+        st.subheader("Performance Analysis", anchor=False, help="Exergy loss for each component | Relative exergy loss for each component | Exergetic efficiency")
         col2.dataframe(df_list_dict_exergia.head(1), use_container_width=True)
 
         list_dados = [x for x in list_dados if x != 0]
