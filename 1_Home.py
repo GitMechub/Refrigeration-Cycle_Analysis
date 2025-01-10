@@ -407,7 +407,11 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
               with st.expander("T-s Cycle Diagram"):
                 st.pyplot(plt.gcf())
 
-
+      # * Volumetric cooling capacity [kJ/m³]
+      try:
+        VCC = ((H1-H4)/1000)*PropsSI("D", "Q", 0, "P", P1, fluido_1)
+      except:
+        VCC = np.nan
 
       # Return results
 
@@ -423,6 +427,7 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
           "Q_c [W]": Q_c_loss,
           "Q_q [W]": Q_cond,
           'COP': COP,
+          'Volumetric Cooling Capacity [kJ/m³]': VCC,
           'Isentropic Efficiency of Compressor': n_is,
           "Transcritical?": transc_cycle,
           "Fluid": fluido_1
@@ -445,7 +450,7 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
   except:
     return 0
 
-#   EXERGY
+#   PERFORMANCE ANALYSIS
 def calculo_exergia_padrao(dados):
 
     # Ambient conditions
@@ -528,7 +533,9 @@ def calculo_exergia_padrao(dados):
         'B_d [kW]': B_d,
         'B_d_total [kW]': B_d_total / 1e3,
         'r_B': r_B,
-        'n_B': n_B
+        'n_B': n_B,
+        'VCC [MJ/m³]': dados['Volumetric Cooling Capacity [kJ/m³]']/1000 if dados['Volumetric Cooling Capacity [kJ/m³]'] is not np.nan else np.nan,
+        'COP': dados['COP']
     }
 
     return resultados
@@ -675,16 +682,18 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
         for i, item in enumerate(list_dict_exergia):
             linha = {
                 'Fluid': fluidos[i],
-                'Compressor [kW]': item['B_d [kW]'].get('Compressor', None),
-                'Condenser/Gas Cooler [kW]': item['B_d [kW]'].get('Condenser', item['B_d [kW]'].get('Gas Cooler', None)),
-                'Expansion Device [kW]': item['B_d [kW]'].get('Expansion Device', None),
-                'Evaporator [kW]': item['B_d [kW]'].get('Evaporator', None),
-                'B_d_total [kW]': item['B_d_total [kW]'],
-                'r_B Compressor': item['r_B'].get('Compressor', None),
-                'r_B Condenser/Gas Cooler': item['r_B'].get('Condenser', item['r_B'].get('Gas Cooler', None)),
-                'r_B Expansion Device': item['r_B'].get('Expansion Device', None),
-                'r_B Evaporator': item['r_B'].get('Evaporator', None),
-                'n_B': item['n_B']
+                'Exergy Loss Compressor [kW]': item['B_d [kW]'].get('Compressor', None),
+                'Exergy Loss Condenser/Gas Cooler [kW]': item['B_d [kW]'].get('Condenser', item['B_d [kW]'].get('Gas Cooler', None)),
+                'Exergy Loss Expansion Device [kW]': item['B_d [kW]'].get('Expansion Device', None),
+                'Exergy Loss Evaporator [kW]': item['B_d [kW]'].get('Evaporator', None),
+                'Total Exergy Loss [kW]': item['B_d_total [kW]'],
+                'Relative Exergy Loss Compressor': item['r_B'].get('Compressor', None),
+                'Relative Exergy Loss Condenser/Gas Cooler': item['r_B'].get('Condenser', item['r_B'].get('Gas Cooler', None)),
+                'Relative Exergy Loss Expansion Device': item['r_B'].get('Expansion Device', None),
+                'Relative Exergy Loss Evaporator': item['r_B'].get('Evaporator', None),
+                'Exergy Efficiency': item['n_B'],
+                'Volumetric Cooling Capacity [MJ/m³]': item['VCC [MJ/m³]'] if 'VCC [MJ/m³]' in item else np.nan,
+                'COP': item['COP']
             }
             tabela.append(linha)
 
