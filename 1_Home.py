@@ -10,7 +10,7 @@ my_file = path+'/pages/images/mechub_logo.png'
 img = Image.open(my_file)
 
 st.set_page_config(
-    page_title='Refrigeration Cycle Analysis v1.0.0',
+    page_title='Refrigeration Cycle Analysis v1.0',
     layout="wide",
     page_icon=img
                    )
