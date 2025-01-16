@@ -10,7 +10,7 @@ my_file = path+'/pages/images/mechub_logo.png'
 img = Image.open(my_file)
 
 st.set_page_config(
-    page_title='Refrigeration Cycle Analysis v1.0',
+    page_title='Refrigeration Cycle Analysis',
     layout="wide",
     page_icon=img
                    )
@@ -40,7 +40,7 @@ import matplotlib as mpl
 
 ################# SETUP #################
 
-st.title("Refrigeration Cycle Analysis v1.0.0", anchor=False)
+st.title("Refrigeration Cycle Analysis v1.0.0l", anchor=False)
 
 col1, col2 = st.columns([1, 2])
 
