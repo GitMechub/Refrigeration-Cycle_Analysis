@@ -409,7 +409,7 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
 
       # * Volumetric cooling capacity [kJ/m³]
       try:
-        VCC = ((H1-H4)/1000)*PropsSI("D", "Q", 0, "P", P1, fluido_1)
+        VCC = ((H1-H4)/1000)*PropsSI("D", "Q", 1, "P", P1, fluido_1)
       except:
         VCC = np.nan
 
@@ -651,7 +651,8 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
             (result_fluido_escolhido['h [J/kg]'][1] - result_fluido_escolhido['h [J/kg]'][2]) /
             (result_fluido_escolhido['s [J/kg·K]'][1] - result_fluido_escolhido['s [J/kg·K]'][2])
         )
-
+        
+        fluidos_remover = []
         # Process cycles for alternative fluids
         for fluido in lista_de_fluidos:
             try:
@@ -673,11 +674,13 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
 
             except Exception as e:
                 print(f"Error processing fluid {fluido}: {e}")
+                fluidos_remover.append(fluido)
                 continue
 
         # Process the data for the exergy table
+        lista_de_fluidos = [f for f in lista_de_fluidos if f not in fluidos_remover]
         fluidos = [fluido_1] + lista_de_fluidos
-        tabela = []
+        
         #print("\n\n * Exergy Destruction Data and Exergy Efficiency:\n")
         for i, item in enumerate(list_dict_exergia):
             linha = {
