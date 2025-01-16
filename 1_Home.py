@@ -677,12 +677,17 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
                 fluidos_remover.append(fluido)
                 continue
 
+        
         # Process the data for the exergy table
         lista_de_fluidos = [f for f in lista_de_fluidos if f not in fluidos_remover]
         fluidos = [fluido_1] + lista_de_fluidos
         
+        tabela = []
         #print("\n\n * Exergy Destruction Data and Exergy Efficiency:\n")
         for i, item in enumerate(list_dict_exergia):
+
+            if fluidos[i] in fluidos_remover:
+                continue
             linha = {
                 'Fluid': fluidos[i],
                 'Exergy Loss Compressor [kW]': item['B_d [kW]'].get('Compressor', None),
