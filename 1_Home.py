@@ -40,7 +40,7 @@ import matplotlib as mpl
 
 ################# SETUP #################
 
-st.title("Refrigeration Cycle Analysis v1.0.0l", anchor=False)
+st.title("Refrigeration Cycle Analysis v1.0.0", anchor=False)
 
 col1, col2 = st.columns([1, 2])
 
