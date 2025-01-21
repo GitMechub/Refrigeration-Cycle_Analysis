@@ -451,7 +451,7 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
     return 0
 
 #   PERFORMANCE ANALYSIS
-def calculo_exergia_padrao(dados):
+def calculo_exergia_padrao(dados, T0):
 
     # Ambient conditions
     T0 = 273.15 + 30   # Ambient temperature [K]
@@ -643,7 +643,7 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
             return False
 
         # Initialize lists for data and exergies
-        list_dict_exergia = [calculo_exergia_padrao(result_fluido_escolhido)]
+        list_dict_exergia = [calculo_exergia_padrao(result_fluido_escolhido, T_cond)]
         list_dados = [result_fluido_escolhido]
 
         # Calculate the average condensation temperature (Tc_)
@@ -670,7 +670,7 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
 
                 # Add results to the lists
                 list_dados.append(dados_)
-                list_dict_exergia.append(calculo_exergia_padrao(dados_))
+                list_dict_exergia.append(calculo_exergia_padrao(dados_, T_cond))
 
             except Exception as e:
                 print(f"Error processing fluid {fluido}: {e}")
