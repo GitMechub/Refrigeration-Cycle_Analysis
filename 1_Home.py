@@ -454,7 +454,6 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
 def calculo_exergia_padrao(dados, T0):
 
     # Ambient conditions
-    T0 = 273.15 + 30   # Ambient temperature [K]
     P0 = 101325        # Ambient pressure [Pa]
 
     # Exergy Destruction Rate for the Compressor (1-2)
