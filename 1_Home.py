@@ -534,7 +534,9 @@ def calculo_exergia_padrao(dados, T0):
         'r_B': r_B,
         'n_B': n_B,
         'VCC [MJ/m³]': dados['Volumetric Cooling Capacity [kJ/m³]']/1000 if dados['Volumetric Cooling Capacity [kJ/m³]'] is not np.nan else np.nan,
-        'COP': dados['COP']
+        'COP': dados['COP'],
+        'Compressor Power [kW]': dados['W_c [W]'] if dados['W_c [W]'] is not np.nan else np.nan,
+        'Fluid': dados['Fluid']
     }
 
     return resultados
@@ -700,7 +702,8 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
                 'Relative Exergy Loss Evaporator': item['r_B'].get('Evaporator', None),
                 'Exergy Efficiency': item['n_B'],
                 'Volumetric Cooling Capacity [MJ/m³]': item['VCC [MJ/m³]'] if 'VCC [MJ/m³]' in item else np.nan,
-                'COP': item['COP']
+                'COP': item['COP'] if 'COP' in item else np.nan,
+                'Compressor Power [kW]': item['Compressor Power [kW]'] if 'Compressor Power [kW]' in item else np.nan
             }
             tabela.append(linha)
 
