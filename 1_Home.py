@@ -51,7 +51,7 @@ if 'active_page' not in st.session_state:
     st.session_state.active_page = '1_Home'
     st.session_state.kT_evap = 273.15
     st.session_state.kT_cond = 273.15+40
-    st.session_state.kQ_evap = 121.7e3
+    st.session_state.kQ_evap = 120e3
     st.session_state.kT_sup = 0
     st.session_state.kT_sub = 0
 
