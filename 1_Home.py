@@ -40,7 +40,7 @@ import matplotlib as mpl
 
 ################# SETUP #################
 
-st.title("Refrigeration Cycle Analysis v1.0.0", anchor=False)
+st.title("Refrigeration Cycle Analysis v1.1.0", anchor=False)
 
 col1, col2 = st.columns([1, 2])
 
@@ -49,11 +49,15 @@ col1.subheader("Setup", divider="gray", anchor=False)
 
 if 'active_page' not in st.session_state:
     st.session_state.active_page = '1_Home'
-    st.session_state.kT_evap = 273.15
+    st.session_state.kT_evap = 273.15+10
     st.session_state.kT_cond = 273.15+40
+    st.session_state.kT_L = 273.15+20
+    st.session_state.kT_H = 273.15+30
     st.session_state.kQ_evap = 120e3
     st.session_state.kT_sup = 0
     st.session_state.kT_sub = 0
+
+    st.session_state.kfluid_list = ['R134a', 'Ammonia', 'R11', 'R12', 'R22', 'R1234yf', 'R410A', 'R507A','CO2', 'N2O']
 
     st.session_state.kfluido_1 = 'CO2'
 
@@ -109,6 +113,32 @@ T_sub = col1.number_input(
     key='kT_sub',
     help="Subcooling temperature difference [K] - only for subcritical cycles"
 )
+
+with col1.expander('Reference Data (Exergy Analysis)'):
+    T_H = st.number_input(
+    label='High-temperature medium',
+    min_value=0.,
+    max_value=T_cond,
+    format="%f",
+    step=1.,
+    key='kT_H',
+    help="Reference temperature for refrigeration cycles [K] - Must be below condensation temperature"
+    )
+
+    T_L = st.number_input(
+    label='Low-temperature medium',
+    min_value=T_evap,
+    format="%f",
+    step=1.,
+    key='kT_L',
+    help="Low-temperature medium [K] - Must be above evaporation temperature"
+    )
+
+    fluid_list = st.multiselect(
+    label="Select Fluids for Comparisons",
+    options = ["R134a", "R12", "R22", "R404A", "R407C", "R410A", "R507A", "Ammonia", "CO2","R1234yf", "R23", "R32", "R11", "R123", "R13", "R1234ze", "R245fa","Ethane", "Isopentane", "Isohexane", "IsoButane", "n-Propane", "n-Butane", "n-Pentane","CycloPropane", "CycloPentane", "Propylene", "Xenon", "SulfurDioxide", "EthylBenzene","Ethanol", "Ethylene", "N2O"],
+    key='kfluid_list',
+    )
 
 fluido_1 = col1.selectbox(
     'Refrigerant Fluid', ["R134a", "R12", "R22", "R404A", "R407C", "R410A", "R507A", "Ammonia", "CO2",
@@ -451,44 +481,46 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
     return 0
 
 #   PERFORMANCE ANALYSIS
-def calculo_exergia_padrao(dados, T0):
-
+def calculo_exergia_padrao(dados, T_H, T_L):
     # Ambient conditions
-    P0 = 101325        # Ambient pressure [Pa]
+    P0 = 101325  # Ambient pressure [Pa]
+    T0 = T_H  # In refrigeration systems, the reference temperature is typically set to the temperature of the high-temperature medium
 
     # Exergy Destruction Rate for the Compressor (1-2)
 
     B_dc = (
-        (1 - (T0 / ((dados['T [K]'][0] + dados['T [K]'][1]) / 2))) * dados['Q_c [W]'] + dados['W_c [W]']
-        + dados['Mass flow rate [kg/s]'] *
-        (dados['h [J/kg]'][0] - dados['h [J/kg]'][1]
-         - T0 * (dados['s [J/kg·K]'][0] - dados['s [J/kg·K]'][1]))
+            (1 - (T0 / ((dados['T [K]'][0] + dados['T [K]'][1]) / 2))) * dados['Q_c [W]'] + dados['W_c [W]']
+            + dados['Mass flow rate [kg/s]'] *
+            (dados['h [J/kg]'][0] - dados['h [J/kg]'][1]
+             - T0 * (dados['s [J/kg·K]'][0] - dados['s [J/kg·K]'][1]))
     )
 
     # Exergy Destruction Rate for the Gas Cooler/Condenser (2-3)
 
-    Tme_Q = dados['T [K]'][1] if dados['Transcritical?'] is False else abs(
-        (dados['h [J/kg]'][1] - dados['h [J/kg]'][2]) / (dados['s [J/kg·K]'][1] - dados['s [J/kg·K]'][2])
-    )  # Entropic average temperature if transcritical
+    # Tme_Q = dados['T [K]'][1] if dados['Transcritical?'] is False else abs(
+    #    (dados['h [J/kg]'][1] - dados['h [J/kg]'][2]) / (dados['s [J/kg·K]'][1] - dados['s [J/kg·K]'][2])
+    # )  # Entropic average temperature if transcritical
 
     B_dQ = (
-        (1 - (T0 / Tme_Q)) * dados['Q_q [W]']
-        + dados['Mass flow rate [kg/s]'] *
-        (dados['h [J/kg]'][1] - dados['h [J/kg]'][2]
-         - T0 * (dados['s [J/kg·K]'][1] - dados['s [J/kg·K]'][2]))
+            (1 - (T0 / T_H)) * dados['Q_q [W]']
+            + dados['Mass flow rate [kg/s]'] *
+            (dados['h [J/kg]'][1] - dados['h [J/kg]'][2]
+             - T0 * (dados['s [J/kg·K]'][1] - dados['s [J/kg·K]'][2]))
     )
 
     # Exergy Destruction Rate for the Expansion Device (3-4)
+
     B_dE = (
-        dados['Mass flow rate [kg/s]'] * T0 * (dados['s [J/kg·K]'][3] - dados['s [J/kg·K]'][2])
+            dados['Mass flow rate [kg/s]'] * T0 * (dados['s [J/kg·K]'][3] - dados['s [J/kg·K]'][2])
     )
 
     # Exergy Destruction Rate for the Evaporator (4-1)
+
     B_dF = (
-        ((T0 / dados['T [K]'][0]) - 1) * dados['Q_f [W]']
-        + dados['Mass flow rate [kg/s]'] *
-        (dados['h [J/kg]'][3] - dados['h [J/kg]'][0]
-         - T0 * (dados['s [J/kg·K]'][3] - dados['s [J/kg·K]'][0]))
+            ((T0 / T_L) - 1) * dados['Q_f [W]']
+            + dados['Mass flow rate [kg/s]'] *
+            (dados['h [J/kg]'][3] - dados['h [J/kg]'][0]
+             - T0 * (dados['s [J/kg·K]'][3] - dados['s [J/kg·K]'][0]))
     )
 
     # Total Exergy Destruction Rate
@@ -520,10 +552,10 @@ def calculo_exergia_padrao(dados, T0):
     }
 
     # Exergy Efficiency
-    B_gain_expr = ((T0 / dados['T [K]'][0]) - 1) * dados['Q_f [W]']
+    B_gain_expr = ((T0 / T_L) - 1) * dados['Q_f [W]']
     B_cost_expr = (
-        dados['Mass flow rate [kg/s]'] *
-        (dados['h [J/kg]'][1] - dados['h [J/kg]'][0])   # Compressor work
+            dados['Mass flow rate [kg/s]'] *
+            (dados['h [J/kg]'][1] - dados['h [J/kg]'][0])  # Compressor work
     )
     n_B = B_gain_expr / B_cost_expr
 
@@ -533,11 +565,14 @@ def calculo_exergia_padrao(dados, T0):
         'B_d_total [kW]': B_d_total / 1e3,
         'r_B': r_B,
         'n_B': n_B,
-        'VCC [MJ/m³]': dados['Volumetric Cooling Capacity [kJ/m³]']/1000 if dados['Volumetric Cooling Capacity [kJ/m³]'] is not np.nan else np.nan,
-        'COP': dados['COP'],
-        'Compressor Power [kW]': dados['W_c [W]'] if dados['W_c [W]'] is not np.nan else np.nan,
+        'VCC [MJ/m³]': dados['Volumetric Cooling Capacity [kJ/m³]'] / 1000 if dados[
+                                                                                  'Volumetric Cooling Capacity [kJ/m³]'] is not np.nan else np.nan,
+        'COP': dados['COP'] if dados['COP'] is not np.nan else np.nan,
+        'Compressor Power [kW]': dados['W_c [W]'] / 1000 if dados['W_c [W]'] is not np.nan else np.nan,
         'Fluid': dados['Fluid']
     }
+
+    # print(dados['COP'], dados['Fluid'])
 
     return resultados
 
@@ -604,7 +639,7 @@ def Bd_comparativo(list_dict_exergia, list_dados):
 
 
 #   PROCESSING
-def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_sub=0):
+def processar_ciclos_refrigeracao(T_evap, T_cond, T_L, T_H, n_is, Q_evap, r_Qc, fluido_1, fluid_list, T_sup=0, T_sub=0):
 
     # Basic input validation
     if not isinstance(T_evap, (int, float)) or not isinstance(T_cond, (int, float)):
@@ -624,7 +659,7 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
         return False
 
     # List of alternative fluids
-    lista_de_fluidos = ['R134a', 'Ammonia', 'R11', 'R12', 'R22', 'Butene', 'R1234yf', 'Methane', 'R410A', 'R407C','CO2', 'N2O', "CycloPentane", "n-Butane"]
+    lista_de_fluidos = fluid_list
 
     # Remove the chosen initial fluid from the list
     if fluido_1 in lista_de_fluidos:
@@ -644,7 +679,7 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
             return False
 
         # Initialize lists for data and exergies
-        list_dict_exergia = [calculo_exergia_padrao(result_fluido_escolhido, T_cond)]
+        list_dict_exergia = [calculo_exergia_padrao(result_fluido_escolhido, T_H, T_L)]
         list_dados = [result_fluido_escolhido]
 
         # Calculate the average condensation temperature (Tc_)
@@ -671,7 +706,7 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
 
                 # Add results to the lists
                 list_dados.append(dados_)
-                list_dict_exergia.append(calculo_exergia_padrao(dados_, T_cond))
+                list_dict_exergia.append(calculo_exergia_padrao(dados_, T_H, T_L))
 
             except Exception as e:
                 print(f"Error processing fluid {fluido}: {e}")
@@ -733,10 +768,9 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, 
 
 #   ENVIRONMENT
 
-def environmental_effects(fluido_1):
+def environmental_effects(fluido_1, fluid_list):
     # List of alternative fluids
-    lista_de_fluidos = ['R134a', 'Ammonia', 'R11', 'R12', 'R22', 'Butene', 'R1234yf', 'Methane', 'R410A', 'R407C',
-                        'CO2', 'N2O', "CycloPentane", "n-Butane"]
+    lista_de_fluidos = fluid_list
 
     # Remove the chosen initial fluid from the list
     if fluido_1 in lista_de_fluidos:
@@ -820,8 +854,8 @@ if run_button:
   with col2:
 
     with st.spinner('Loading...'):
-        list_dados, list_dict_exergia, df_list_dict_exergia = processar_ciclos_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1,
-                                                                      T_sup, T_sub)
+
+        list_dados, list_dict_exergia, df_list_dict_exergia = processar_ciclos_refrigeracao(T_evap, T_cond, T_L, T_H, n_is, Q_evap, r_Qc, fluido_1, fluid_list, T_sup, T_sub)
 
         with st.expander("Comparative analysis for various fluids"):
             if list_dados[0]['Transcritical?'] == True:
@@ -832,7 +866,7 @@ if run_button:
         st.divider()
         st.subheader("Environmental Effects", anchor=False)
         with st.expander("GWP Analysis"):
-            environmental_effects(fluido_1)
+            environmental_effects(fluido_1, fluid_list)
 
         ################# DOWNLOAD #################
 
