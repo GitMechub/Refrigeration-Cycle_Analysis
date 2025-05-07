@@ -28,7 +28,7 @@ hide_menu = '''
         '''
 st.markdown(hide_menu, unsafe_allow_html=True)
 
-st.header("Refrigeration Cycle Analysis v1.0.0", divider="gray", anchor=False)
+st.header("Refrigeration Cycle Analysis v1.1.0", divider="gray", anchor=False)
 
 st.markdown('''
 ## About Refrigeration Cycle Analysis:
