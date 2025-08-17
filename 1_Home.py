@@ -57,7 +57,7 @@ if 'active_page' not in st.session_state:
     st.session_state.kT_sup = 0
     st.session_state.kT_sub = 0
 
-    st.session_state.kfluid_list = ['R134a', 'Ammonia', 'R11', 'R12', 'R22', 'R1234yf', 'R410A', 'R32','CO2', 'N2O']
+    st.session_state.kfluid_list = ['R134a', 'R11', 'R12', 'R22', 'R1234yf', 'R410A', 'R32', 'CO2', 'Ammonia', 'N2O']
 
     st.session_state.kfluido_1 = 'CO2'
 
@@ -902,6 +902,7 @@ if run_button:
 
 else:
   col2.markdown("Click on 'Run'")
+
 
 
 
