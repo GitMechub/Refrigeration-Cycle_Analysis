@@ -93,7 +93,7 @@ Q_evap = col1.number_input(
 )
 
 r_Qc = col1.slider(
-    "% Heat rejected in compressor", 0., 0.9, 0.1, help='% Heat rejected in compressor'
+    "% Heat rejected in compressor", 0., 0.9, 0.1, help='Fraction of the compressor input power that is lost as heat to the surroundings'
 )
 
 T_sup = col1.number_input(
@@ -235,7 +235,13 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
             H3 = PropsSI("H", "P", P3, "T", T3, fluido_1)
             S3 = PropsSI("S", "P", P3, "H", H3, fluido_1)
 
-            COP = ((H1 - H3)*(1-r_Qc)) / (H2 - H1)
+            # Evaporator cooling [J/kg]
+            q_evap_spec = H1 - H4
+
+            # Compressor specific work input [J/kg], corrected for shell heat losses
+            w_comp_spec = (H2 - H1) / (1 - r_Qc)
+
+            COP = q_evap_spec / w_comp_spec
 
             P2_list.append(P2 / 1e5)  # Converting to bar
             COP_list.append(COP)
@@ -896,3 +902,4 @@ if run_button:
 
 else:
   col2.markdown("Click on 'Run'")
+
