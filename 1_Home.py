@@ -236,7 +236,7 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
             S3 = PropsSI("S", "P", P3, "H", H3, fluido_1)
 
             # Evaporator cooling [J/kg]
-            q_evap_spec = H1 - H4
+            q_evap_spec = H1 - H3
 
             # Compressor specific work input [J/kg], corrected for shell heat losses
             w_comp_spec = (H2 - H1) / (1 - r_Qc)
@@ -902,5 +902,6 @@ if run_button:
 
 else:
   col2.markdown("Click on 'Run'")
+
 
 
