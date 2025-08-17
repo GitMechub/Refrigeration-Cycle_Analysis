@@ -57,7 +57,7 @@ if 'active_page' not in st.session_state:
     st.session_state.kT_sup = 0
     st.session_state.kT_sub = 0
 
-    st.session_state.kfluid_list = ['R134a', 'Ammonia', 'R11', 'R12', 'R22', 'R1234yf', 'R410A', 'R507A','CO2', 'N2O']
+    st.session_state.kfluid_list = ['R134a', 'Ammonia', 'R11', 'R12', 'R22', 'R1234yf', 'R410A', 'R32','CO2', 'N2O']
 
     st.session_state.kfluido_1 = 'CO2'
 
@@ -93,7 +93,7 @@ Q_evap = col1.number_input(
 )
 
 r_Qc = col1.slider(
-    "% Heat rejected in compressor", 0., 0.9, 0.1, help='Fraction of the compressor input power that is lost as heat to the surroundings'
+    "% Heat rejected in compressor", 0., 0.9, 0., help='Fraction of the compressor input power that is lost as heat to the surroundings'
 )
 
 T_sup = col1.number_input(
@@ -902,4 +902,5 @@ if run_button:
 
 else:
   col2.markdown("Click on 'Run'")
+
 
