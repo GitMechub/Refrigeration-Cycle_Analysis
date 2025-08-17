@@ -448,6 +448,12 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
         VCC = ((H1-H4)/1000)*PropsSI("D", "Q", 1, "P", P1, fluido_1)
       except:
         VCC = np.nan
+      
+      # * Volumetric compression work [kJ/m³]
+      try:
+        VCW = ((H2-H1)/1000)*PropsSI("D", "Q", 1, "P", P1, fluido_1)
+      except:
+        VCW = np.nan
 
       # Return results
 
@@ -464,6 +470,7 @@ def ciclo_refrigeracao(T_evap, T_cond, n_is, Q_evap, r_Qc, fluido_1, T_sup=0, T_
           "Q_q [W]": Q_cond,
           'COP': COP,
           'Volumetric Cooling Capacity [kJ/m³]': VCC,
+          'Volumetric Compression Work [kJ/m³]': VCW,
           'Isentropic Efficiency of Compressor': n_is,
           "Transcritical?": transc_cycle,
           "Fluid": fluido_1
@@ -573,6 +580,7 @@ def calculo_exergia_padrao(dados, T_H, T_L):
         'n_B': n_B,
         'VCC [MJ/m³]': dados['Volumetric Cooling Capacity [kJ/m³]'] / 1000 if dados[
                                                                                   'Volumetric Cooling Capacity [kJ/m³]'] is not np.nan else np.nan,
+        'VCW [MJ/m³]': dados['Volumetric Compression Work [kJ/m³]']/1000 if dados['Volumetric Compression Work [kJ/m³]'] is not np.nan else np.nan,
         'COP': dados['COP'] if dados['COP'] is not np.nan else np.nan,
         'Compressor Power [kW]': dados['W_c [W]'] / 1000 if dados['W_c [W]'] is not np.nan else np.nan,
         'Fluid': dados['Fluid']
@@ -743,6 +751,7 @@ def processar_ciclos_refrigeracao(T_evap, T_cond, T_L, T_H, n_is, Q_evap, r_Qc, 
                 'Relative Exergy Loss Evaporator': item['r_B'].get('Evaporator', None),
                 'Exergy Efficiency': item['n_B'],
                 'Volumetric Cooling Capacity [MJ/m³]': item['VCC [MJ/m³]'] if 'VCC [MJ/m³]' in item else np.nan,
+                'Volumetric Compression Work [MJ/m³]': item['VCW [MJ/m³]'] if 'VCW [MJ/m³]' in item else np.nan,
                 'COP': item['COP'] if 'COP' in item else np.nan,
                 'Compressor Power [kW]': item['Compressor Power [kW]'] if 'Compressor Power [kW]' in item else np.nan
             }
@@ -902,6 +911,7 @@ if run_button:
 
 else:
   col2.markdown("Click on 'Run'")
+
 
 
 
