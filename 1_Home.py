@@ -611,7 +611,7 @@ def Bd_comparativo(list_dict_exergia, list_dados):
   evaporator = [dict_exergia['B_d [kW]']['Evaporator'] for dict_exergia in list_dict_exergia]
 
   # Setting up the chart
-  plt.figure(figsize=(10, 6))
+  plt.figure(figsize=(10, 6), constrained_layout=True)
   x = np.arange(len(states))  # Positions for the bars
   width = 0.6  # Width of the bars
 
@@ -911,6 +911,7 @@ if run_button:
 
 else:
   col2.markdown("Click on 'Run'")
+
 
 
 
