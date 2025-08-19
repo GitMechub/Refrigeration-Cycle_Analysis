@@ -644,7 +644,7 @@ def Bd_comparativo(list_dict_exergia, list_dados):
   plt.ylabel('Exergy Destruction (kW)')
   plt.xlabel('Cycles')
   plt.title('Exergy Destruction by Component')
-  plt.legend()
+  plt.legend(framealpha=0.5) 
 
   # Show the chart
   #plt.show()
@@ -911,6 +911,7 @@ if run_button:
 
 else:
   col2.markdown("Click on 'Run'")
+
 
 
 
